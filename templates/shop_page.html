@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Спортбар / Магазин</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/lux/bootstrap.min.css">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="#"> СПОРТБАР</a>
+            <div class="d-flex">
+                <a href="/check_in" class="btn btn-dark btn-sm me-2"> На Рецепцію</a>
+                <a href="/reports " class="btn btn-info btn-sm"> Звіти</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success alert-dismissible fade show shadow-sm">
+                    <strong>{{ message }}</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="row">
+            
+            <div class="col-md-7">
+                <div class="card shadow border-dark h-100">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="m-0"> Наявність товарів</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-striped table-hover mb-0 align-middle">
+                            <thead class="table-secondary">
+                                <tr>
+                                    <th>Назва</th>
+                                    <th>Ціна</th>
+                                    <th>Залишок</th>
+                                    <th>Дія</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for p in products %}
+                                <tr>
+                                    <td class="fw-bold">{{ p.name }}</td>
+                                    <td>{{ p.price }} грн</td>
+                                    <td>
+                                        {% if p.quantity > 5 %}
+                                            <span class="badge bg-success">{{ p.quantity }} шт.</span>
+                                        {% elif p.quantity > 0 %}
+                                            <span class="badge bg-warning text-dark">{{ p.quantity }} шт.</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">0 шт.</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if p.quantity > 0 %}
+                                        <button class="btn btn-sm btn-outline-dark" 
+                                                onclick="selectProduct('{{ p.id }}')">
+                                            Обрати 
+                                        </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-5">
+                <div class="card shadow border-warning position-sticky" style="top: 20px;">
+                    <div class="card-header bg-warning">
+                        <h4 class="m-0 text-dark"> Оформлення продажу</h4>
+                    </div>
+                    <div class="card-body">
+                        
+                        <form action="{% url 'sell_product' %}" method="post">
+                            {% csrf_token %}
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Товар:</label>
+                                <select class="form-select form-select-lg" name="product_id" id="productSelect" required>
+                                    <option value="" selected disabled>-- Оберіть зі списку --</option>
+                                    {% for p in products %}
+                                        {% if p.quantity > 0 %}
+                                            <option value="{{ p.id }}">{{ p.name }} ({{ p.price }} грн)</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Кількість:</label>
+                                <div class="input-group">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="changeAmount(-1)">-</button>
+                                    <input type="number" name="amount" id="amountInput" value="1" min="1" class="form-control text-center font-weight-bold" required>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="changeAmount(1)">+</button>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <div class="mb-3">
+    <label class="form-label fw-bold">Клієнт (не обов'язково):</label>
+    <input class="form-control" list="datalistOptions" id="clientSearchInput" placeholder="Пошук клієнта...">
+    
+    <datalist id="datalistOptions">
+        {% for c in clients %}
+            <option data-id="{{ c.id }}" value="{{ c.lastname }} {{ c.firstname }} ({{ c.phone }})"></option>
+        {% endfor %}
+    </datalist>
+    
+    <input type="hidden" name="client_id" id="realClientId">
+</div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Оплата:</label>
+                                <div class="btn-group w-100" role="group">
+                                    <input type="radio" class="btn-check" name="method_payment" id="cash" value="cash" checked>
+                                    <label class="btn btn-outline-success" for="cash"> Готівка</label>
+
+                                    <input type="radio" class="btn-check" name="method_payment" id="card" value="card">
+                                    <label class="btn btn-outline-primary" for="card"> Картка</label>
+
+                                    <input type="radio" class="btn-check" name="method_payment" id="debt" value="no_paid">
+                                    <label class="btn btn-outline-danger" for="debt"> Борг</label>
+                                </div>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-dark btn-lg py-3">ПРОДАТИ ТОВАР</button>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // 1. Пошук клієнта
+        document.getElementById('clientSearchInput').addEventListener('input', function(e) {
+            var input = e.target;
+            var list = input.getAttribute('list');
+            var options = document.getElementById(list).childNodes;
+            document.getElementById('realClientId').value = ""; // Очистка
+            for(var i = 0; i < options.length; i++) {
+                if(options[i].value === input.value) {
+                    var id = options[i].getAttribute('data-id');
+                    document.getElementById('realClientId').value = id;
+                    break;
+                }
+            }
+        });
+
+        // 2. Функція вибору товару з таблиці зліва
+        function selectProduct(id) {
+            document.getElementById('productSelect').value = id;
+        }
+
+        // 3. Кнопки +/-
+        function changeAmount(val) {
+            var input = document.getElementById('amountInput');
+            var current = parseInt(input.value);
+            if (current + val >= 1) {
+                input.value = current + val;
+            }
+        }
+    </script>
+
+</body>
+</html>

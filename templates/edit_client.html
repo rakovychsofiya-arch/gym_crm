@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Редагування клієнта</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/lux/bootstrap.min.css">
+</head>
+<body class="bg-dark text-white">
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow border-info">
+                    <div class="card-header bg-info text-white">
+                        <h3> Редагування профілю</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Ім'я</label>
+                                <input type="text" class="form-control" name="firstname" value="{{ client.firstname }}" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Прізвище</label>
+                                <input type="text" class="form-control" name="lastname" value="{{ client.lastname }}" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Телефон</label>
+                                <input type="text" class="form-control" name="phone" value="{{ client.phone }}" required>
+                            </div>
+
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn btn-info text-white"> Зберегти зміни</button>
+                                <a href="/check_in"={{ client.phone }}" class="btn btn-secondary">Скасувати</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Продаж абонемента</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/lux/bootstrap.min.css">
+</head>
+
+<body class="bg-dark text-white">
+
+    <div class="container mt-5">
+        <div class="card shadow">
+            <div class="card-header bg-warning text-dark">
+                <h3> Продаж абонемента</h3>
+            </div>
+            <div class="card-body">
+                <h4>Клієнт: <strong>{{ client.firstname }} {{ client.lastname }}</strong></h4>
+                <hr>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-4">
+                        <label class="form-label h5">Оберіть абонемент:</label>
+                        <select class="form-select" name="abonement_id" required>
+                            {% for ab in abonements %}
+                                {% if ab.id == selected_abonement_id %}
+                                     <option value="{{ ab.id }}" selected>{{ ab.name }} — {{ ab.price }} грн</option>
+                                {% else %}
+                                      <option value="{{ ab.id }}">{{ ab.name }} — {{ ab.price }} грн</option>
+                                 {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label h5">Призначити тренера:</label>
+                        <select class="form-select" name="trainer_id">
+                            <option value="">-- Без тренера --</option>
+                            {% for tr in trainers %}
+                                 {% if tr.id == selected_trainer_id %}
+                                      <option value="{{ tr.id }}" selected>{{ tr.firstname }} {{ tr.lastname }}</option>
+                                {% else %}
+                                      <option value="{{ tr.id }}">{{ tr.firstname }} {{ tr.lastname }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                   {% if not price %}
+                <div class="d-grid gap-2">
+                    <button type="submit" name="get_price" value="price" class="btn btn-primary btn-lg">
+                        Перейти до оплати
+                    </button>
+                </div>
+                {% endif %}
+
+                {% if price %}
+                    <hr class="my-4">
+                    
+                    <div class="alert alert-success text-center shadow-sm">
+                        <h5 class="text-muted">До сплати:</h5>
+                        <h1 class="display-4 fw-bold">{{ price }} грн</h1>
+                    </div>
+
+                    <div class="mb-4 text-center">
+                        <label class="form-label fw-bold d-block mb-2">Спосіб оплати:</label>
+                        <div class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="method_payment" id="cash" value="cash" checked>
+                            <label class="btn btn-outline-success px-4" for="cash"> Готівка</label>
+
+                            <input type="radio" class="btn-check" name="method_payment" id="card" value="card">
+                            <label class="btn btn-outline-primary px-4" for="card"> Картка</label>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" name="get_price" value="sell" class="btn btn-success btn-lg">
+                            Оформити продаж
+                        </button>
+                        <button type="submit" name="get_price" value="price" class="btn btn-outline-secondary btn-sm">
+                            Змінити умови
+                        </button>
+                    </div>
+                {% endif %}
+                    <a href="/check_in" class="btn btn-secondary w-100">Скасувати</a>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

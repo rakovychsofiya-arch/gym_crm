@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Спортзал Check-in</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/lux/bootstrap.min.css">
+</head>
+
+<body class="bg-light">
+  <div class="d-flex justify-content-end mb-3">
+    <a href="{% url 'shop_page' %}" class="btn btn-warning shadow fw-bold">
+        ВІДКРИТИ МАГАЗИН
+    </a>
+</div>
+    <div class="container mt-5">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h3> Рецепція: Check-in</h3>
+            </div>
+            <div class="card-body">
+
+                <h5 class="card-title">Знайти клієнта</h5>
+                <form method="get">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" placeholder="Введіть номер телефону або прізвище..."
+                            name="query">
+                        <button class="btn btn-dark" type="submit">Пошук</button>
+                    </div>
+                </form>
+                {% if clients %}
+                <div class="d-flex justify-content-end mb-3">
+</div>
+                <div class="card shadow mb-4 border-dark">
+                    <div class="card-header bg-primary text-light">
+                        <h5>Результати пошуку</h5>
+                    </div>
+                    
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+
+                            <table class="table table-striped mb-0">
+                                <thead class="table-yellow">
+                                    <tr>
+                                        <th class="py-3 ps-4">Клієнт</th>
+                                        <th class="py-3">Телефон</th>
+                                        <th class="py-3">Абонемент</th>
+                                        <th class="py-3">Дійсний    до</th>
+                                        <th class="py-3">Залишок</th>
+
+                                        <th class="py-3 text-end pe-4">Дії</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for client in clients %}
+                                     <tr>
+                                        <td class="py-3 ps-4 fw-bold">{{ client.firstname }} {{ client.lastname }}</td>
+                                        <td class="py-3">{{ client.phone }}</td>
+
+                                        <td class="py-3">
+                                            {% if client.active_abonement %}
+                                            <span class="badge bg-primary text-wrap" style="width: 6rem;">
+                                                {{ client.active_abonement.abonement.name }}
+                                            </span>
+                                            {% else %}
+                                            <span class="badge bg-secondary">Немає</span>
+                                            {% endif %}
+                                        </td>
+                                        
+                                        <td class="py-3">
+                                            {% if client.active_abonement %}
+                                            <span class="badge bg-primary text-wrap" style="width: 6rem;">
+                                                {{ client.active_abonement.end_date|date:"d.m.Y" }}
+                                            </span>
+                                            {% else %}
+                                            <span class="badge bg-secondary"></span>
+                                            {% endif %}
+                                        </td>
+
+                                        <td>
+                                            {% if client.active_abonement %}
+                                            {% if client.active_abonement.visits_left > 0 %}
+                                            <strong
+                                                class="text-primary">{{client.active_abonement.visits_left}}</strong>
+                                            {% else %}
+                                            <span class="text-primary">Немає </span>
+                                            {% endif %}
+                                            {% else %}
+                                            -
+                                            {% endif %}
+                                        </td>
+
+                                        <td class="py-3 text-end pe-4">
+                                            {% if client.active_abonement %}
+                                            <a href="{% url 'edit_client' client.id %}" 
+                                            class="btn btn-outline-secondary btn-sm me-2 text-nowrap">Редагувати</a> 
+                                            <a href="{% url 'process_check_in' client.id %}"
+                                                class="btn btn-success btn-sm text-nowrap">Відмітити</a>
+                                            {% else %}
+                                            <a href="{% url 'edit_client' client.id %}" 
+                                            class="btn btn-outline-secondary btn-sm me-2 text-nowrap">Редагувати</a> 
+                                            <a href="{% url 'sell_membership' client.id %}"
+                                                class="btn btn-warning btn-sm text-nowrap">Продати</a>
+                                            {% endif %}
+                                        </td>
+                                     </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="container mt-5">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+            <strong>{{ message }}</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        <div class="card shadow mb-5">
+            <div class="card-header bg-primary text-white">
+                <h5>Додати нового клієнта</h5>
+            </div>
+
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="form_type" value="add_client">
+
+                    <div class="table table-hover">
+
+                        <div class="col-md-10">
+                            <label class="form-label fw-bold">Ім'я</label>
+                            <input type="text" class="form-control" name="firstname" required>
+                        </div>
+
+                        <div class="col-md-10">
+                            <label class="form-label fw-bold">Прізвище</label>
+                            <input type="text" class="form-control" name="lastname" required>
+                        </div>
+
+                        <div class="col-md-10">
+                            <label class="form-label fw-bold">Телефон</label>
+                            <input type="text" class="form-control" placeholder= 0671212616 name="phone" required> 
+                        </div>
+
+                        <div class="col-md-5 text-end">
+                            <label class="form-label d-block">&nbsp;</label> <button class="btn btn-dark w-75"
+                                type="submit">Зберегти</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+ <div class="container mt-5">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="m-0"> Фінансовий облік</h5>
+            </div>
+            
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="card-text text-muted mb-0">Перегляд каси, історії продажів та боргів.</p>
+                    </div>
+                    
+                    <a href="/reports" class="btn btn-dark btn-lg">
+                        Переглянути звіти 
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</body>
+
+</html>
